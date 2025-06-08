@@ -1,6 +1,6 @@
 from PIL import Image
 import requests
-from streamlit_lottie import st_lottie 
+
 import streamlit as st
 
 st.set_page_config(page_title="my_website", page_icon=":tada:", layout="wide")
