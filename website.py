@@ -1,94 +1,95 @@
+import streamlit as st
 from PIL import Image
 import requests
-from streamlit_lottie import st_lottie 
-import streamlit as st
+from streamlit_lottie import st_lottie
+import os
 
-st.set_page_config(page_title="my_website", page_icon=":tada:", layout="wide")
+st.set_page_config(page_title="My Art Portfolio", page_icon=":art:", layout="wide")
 
 def load_lottieurl(url):
-    r = requests.get(url)
-    if r.status_code != 200:
+    try:
+        r = requests.get(url)
+        r.raise_for_status()
+        return r.json()
+    except requests.RequestException:
         return None
-    return r.json()
 
-# Load assets
-image_1 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.16_145a0bde.png")
-image_2 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.18_711f3a78.png")
-image_3 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.19_5bef355a.png")
-image_4 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.21_a851bcd4.png")
-image_5 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.20_f673ccec.png")
-image_6 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.21_3f063336.png")
-image_7 = Image.open("jpg2png/WhatsApp Image 2025-06-08 at 18.09.21_1d51523d.png")
+def safe_open_image(path):
+    try:
+        img = Image.open(path)
+        return img
+    except Exception:
+        st.warning(f"Could not load image: {path}")
+        return None
 
+# Load Lottie animation
 lottie_coding = load_lottieurl("https://lottie.host/aecf3d3b-3910-4aca-ac85-57a013855ece/rdqjULCC4y.json")
 
-# Header section
+# Header Section
 with st.container():
     st.title("Welcome to My Art Portfolio")
     st.header("I am Joshi :smiley:")
     st.subheader("An artist from S.C.E.T")
-    st.write("I am passionate about art and design and I am a self-taught artist. I can create pencil sketches and digital art. I love to experiment with different styles and techniques.")
-    st.markdown("[See more >](https://www.instagram.com/joshful___joshi/?next=%2F&hl=en)")
+    st.write("I am passionate about art and design and am a self-taught artist. I create pencil sketches and digital art, and I love to experiment with different styles and techniques.")
+    st.markdown("[See more on Instagram >](https://www.instagram.com/joshful___joshi/?next=%2F&hl=en)")
 
-# What I do
+# What I Do Section
 with st.container():
     st.write("---")
-    left_column, right_column = st.columns(2)
-    with left_column:
+    left, right = st.columns(2)
+    with left:
         st.header("What I Do :art:")
-        st.write("##")
-        st.write(
+        st.write("###")
+        st.markdown(
             """
-            - **Pencil Sketches**: I create detailed and realistic pencil sketches that capture the essence of my subjects.
-            - **Digital Art**: I use digital tools to create vibrant and imaginative artworks that push the boundaries of traditional art.
-            - **Artistic Exploration**: I love to experiment with different styles and techniques, constantly evolving my artistic expression.
+            - **Pencil Sketches:** Detailed and realistic sketches.
+            - **Digital Art:** Vibrant and imaginative digital works.
+            - **Artistic Exploration:** Always experimenting and evolving!
             """
         )
-    with right_column:
+    with right:
         if lottie_coding:
             st_lottie(lottie_coding, height=300, key="coding")
         else:
             st.error("Failed to load animation.")
 
-
-# artworks section
-
+# Artworks Section
 with st.container():
     st.write("---")
-    st.header("here are some of my artworks :art:")
-    st.write("##")
-    col1, col2, col3 ,col7= st.columns(4)
-    col4 ,col5 ,col6=st.columns(3)
-    
+    st.header("Here are some of my artworks :art:")
+    st.write("###")
+    # Dynamically load all images from the directory
+    image_dir = "jpg2png"
+    image_files = [
+        os.path.join(image_dir, fname) 
+        for fname in os.listdir(image_dir) 
+        if fname.lower().endswith((".png", ".jpg", ".jpeg"))
+    ]
+    image_files.sort()  # Optional: sort for consistent order
 
-with col1:
-    st.image(image_1, width=300)
+    cols = st.columns(3)
+    for idx, img_path in enumerate(image_files):
+        img = safe_open_image(img_path)
+        if img:
+            with cols[idx % 3]:
+                st.image(img, width=300, caption=os.path.basename(img_path), use_column_width="never")
 
-with col2:
-    st.image(image_2, width=300)
+st.markdown("[See more art on Instagram >](https://www.instagram.com/joshful___joshi/?next=%2F&hl=en)")
 
-with col3:
-    st.image(image_3, width=300)
-
-with col4:
-    st.image(image_4, width=300)
-
-with col5:
-    st.image(image_5, width=300)
-
-with col6:
-    st.image(image_6, width=300)
-
-with col7:
-    st.image(image_7, width=300)
-
-
-
-st.markdown("[to see more art >](https://www.instagram.com/joshful___joshi/?next=%2F&hl=en)")
-
-#contact section
+# Contact Section with Form
 with st.container():
     st.write("---")
-    st.header("my contact details :phone:")
-    st.write("contact:- +91 7997787866")
-    st.write("gmail:- joshistylein@gmail.com")
+    st.header("Contact Me :phone:")
+    with st.form(key="contact_form"):
+        name = st.text_input("Your Name")
+        email = st.text_input("Your Email")
+        message = st.text_area("Message")
+        submit = st.form_submit_button("Send")
+        if submit:
+            if name and email and message:
+                st.success("Thank you for reaching out! I will get back to you soon.")
+            else:
+                st.error("Please complete all fields before submitting.")
+    st.write("Or reach out directly:")
+    st.write("Phone: +91 7997787866")
+    st.write("Email: joshistylein@gmail.com")
